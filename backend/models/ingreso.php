@@ -3,30 +3,19 @@ require_once "conexion.php";
 class IngresoModels{
     public function ingresoModel($datosModel,$tabla)
     {
+        $connexion = Conexion::conectar();
         $sql="select intentos,pass,usuario  FROM `{$tabla}` WHERE `usuario` = :usuario and `pass` = :pass";
-        $stmt= Conexion::conectar()->prepare($sql);//primero se conecta, y despues consulta con el prepare y lo guarda en stmt
-        $stmt-> bindParam(":usuario",$datosModel["usuario"],PDO::PARAM_STR);//bindea los valores
-        $stmt-> bindParam(":pass",$datosModel["pass"],PDO::PARAM_STR);
-        $stmt->execute();
-        $respuesta = $stmt->fetch(PDO::FETCH_ASSOC);//guarda en respuesta un array asociado
-
-        $conexion = Conexion::conectar();
-        $gsent = $conexion->prepare($sql);
-        $gsent->bindParam(':usuario', $datosModel['usuario'], PDO::PARAM_INT);
-        $gsent->bindParam(':pass', $datosModel['pass'], PDO::PARAM_STR, 12);
-        $gsent->execute();
-
-        $result = $stmt->fetchAll();
-
-
-
-
-
-
-
-
+        $stmt = $connexion->prepare($sql);
+        foreach ($datosModel as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        if($stmt->execute()){
+            $respuesta = $stmt->fetch(PDO::FETCH_ASSOC);//guarda en respuesta un array asociado
+        }else{
+            $respuesta = new Exception('error de inicio de sesion');
+        }
         return $respuesta;
-        $stmt->close();//cierra conexion
+
     }
     public function intentosModel($datosModel,$tabla)
     {
